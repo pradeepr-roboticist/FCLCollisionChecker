@@ -120,9 +120,17 @@ class FCLCollisionChecker
 
         void load_object_into_cache(const char* filename, const char* tag)
         {
-            auto tree_fcl = read_from_file_(filename);
-            std::cout << "Loading object into cache with tag \"" << tag << "\"" << std::endl;
-            object_octomap_cache_[tag] = tree_fcl;
+            if (0 == object_octomap_cache_.count(tag))
+            {
+                auto tree_fcl = read_from_file_(filename);
+                std::cout << "Loading object into cache with tag \"" << tag << "\"" << std::endl;
+                object_octomap_cache_[tag] = tree_fcl;
+            }
+            else
+            {
+                std::cout << "Object with same name already loaded. Ignoring command." << std::endl;
+            }
+            
         }
 
         void insert_object_into_environment(const char* tag, const fcl::Vec3f& position)
@@ -152,11 +160,16 @@ class FCLCollisionChecker
             auto env_obj = env_collision_object_cache_[tag];
             env_object_manager_->unregisterObject(env_obj.get());
         }
-        void update_object(const char* tag, const fcl::Vec3f& position)
+        void update_object(const char* tag, const fcl::Matrix3f& R, const fcl::Vec3f& t)
         {
             auto env_obj = env_collision_object_cache_[tag];
-            env_obj->setTranslation(position);
-            std::cout << "Setting translation of \"" << tag << "\"" << " to " << position << std::endl;
+            // std::cout << "Current transform of \"" << tag << "\"" << " t : " << env_obj->getTranslation() << std::endl;
+            // std::cout << "Current transform of \"" << tag << "\"" << " R : " << env_obj->getRotation() << std::endl;
+            env_obj->setTranslation(t);
+            env_obj->setRotation(R);
+            // env_obj->setTransform(...); not working
+            // std::cout << "Setting transform of \"" << tag << "\"" << " t : " << env_obj->getTranslation() << std::endl;
+            // std::cout << "Setting transform of \"" << tag << "\"" << " R : " << env_obj->getRotation() << std::endl;
             // env_object_manager_->unregisterObject(env_obj.get());
         }
 

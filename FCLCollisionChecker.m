@@ -16,6 +16,8 @@ classdef FCLCollisionChecker < handle
         INSERT_ROBOT_CMD_ID = uint64(7);
         UPDATE_OBJECT_CMD_ID = uint64(8);
         UPDATE_ROBOT_CMD_ID = uint64(9);
+        REMOVE_OBJECT_CMD_ID = uint64(10);
+        REMOVE_ROBOT_CMD_ID = uint64(11);
     end
     properties (SetAccess = private, Hidden = true)
         objectHandle; % Handle to the underlying C++ class instance
@@ -89,6 +91,20 @@ classdef FCLCollisionChecker < handle
 %                 error('Need input: insert_robot_into_environment()');
 %             end
             [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.UPDATE_ROBOT_CMD_ID, this.objectHandle, varargin{:});
+        end
+        %% Remove object
+        function varargout = remove_object(this, varargin)
+%             if isempty(varargin{1})
+%                 error('Need input: insert_robot_into_environment()');
+%             end
+            [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.REMOVE_OBJECT_CMD_ID, this.objectHandle, varargin{:});
+        end
+        %% Remove robot
+        function varargout = remove_robot(this, varargin)
+%             if isempty(varargin{1})
+%                 error('Need input: insert_robot_into_environment()');
+%             end
+            [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.REMOVE_ROBOT_CMD_ID, this.objectHandle, varargin{:});
         end
     end
 end

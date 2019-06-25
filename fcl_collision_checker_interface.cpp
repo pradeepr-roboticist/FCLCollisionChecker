@@ -20,11 +20,26 @@ const size_t INSERT_OBJECT_CMD_ID = 6;
 const size_t INSERT_ROBOT_CMD_ID = 7;
 const size_t UPDATE_OBJECT_CMD_ID = 8;
 const size_t UPDATE_ROBOT_CMD_ID = 9;
+const size_t REMOVE_OBJECT_CMD_ID = 10;
+const size_t REMOVE_ROBOT_CMD_ID = 11;
 
 fcl::Vec3f read_point_from_matlab(const mxArray* point_ptr)
 {
     const mxDouble *const loc = mxGetDoubles(point_ptr);
     return fcl::Vec3f(loc[0], loc[1], loc[2]);
+}
+std::pair<fcl::Matrix3f, fcl::Vec3f> read_transform_matrix_from_matlab(const mxArray* mat_ptr)
+{
+    const mxDouble *const data_ptr = mxGetDoubles(mat_ptr);
+    const size_t row_dim = mxGetM(mat_ptr);
+    const size_t col_dim = mxGetN(mat_ptr);
+    if (row_dim != 4 || col_dim != 4)
+    {
+        mexErrMsgTxt("Wrong dimensions. Expected 4x4 matrix.");
+    }
+    fcl::Vec3f position(data_ptr[12], data_ptr[13], data_ptr[14]);
+    fcl::Matrix3f rotation({data_ptr[0], data_ptr[1], data_ptr[2]}, {data_ptr[4], data_ptr[5], data_ptr[6]}, {data_ptr[8], data_ptr[9], data_ptr[10]});
+    return std::pair<fcl::Matrix3f, fcl::Vec3f>(rotation, position);
 }
 std::vector<fcl::Vec3f> read_points_from_matlab(const mxArray* points_ptr)
 {
@@ -187,7 +202,18 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         //     mexWarnMsgTxt("Insert: Unexpected arguments.");
         
         char* tag = mxArrayToString(prhs[2]);
-        cc_instance->update_object(tag, read_point_from_matlab(prhs[3]));
+        auto R_T = read_transform_matrix_from_matlab(prhs[3]);
+        cc_instance->update_object(tag, R_T.first, R_T.second);
+        mxFree(tag);
+        return;
+    }
+    if ( REMOVE_OBJECT_CMD_ID == cmd_id ) {
+        // Check parameters
+        // if (nlhs < 0 || nrhs < 3)
+        //     mexWarnMsgTxt("Insert: Unexpected arguments.");
+        char* tag = mxArrayToString(prhs[2]);
+        cc_instance->remove_object_from_environment(tag);
+        mxFree(tag);
         return;
     }
 
@@ -205,9 +231,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         // Check parameters
         // if (nlhs < 0 || nrhs < 3)
         //     mexWarnMsgTxt("Insert: Unexpected arguments.");
-        
-        // void load_robot_into_cache(const char* tag, const std::vector<fcl::Vec3f>& position, const std::vector<double>& radii)
-        // Get filename
         cc_instance->insert_robot_into_environment();
         return;
     }
@@ -215,11 +238,15 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         // Check parameters
         // if (nlhs < 0 || nrhs < 3)
         //     mexWarnMsgTxt("Insert: Unexpected arguments.");
-        
-        // void load_robot_into_cache(const char* tag, const std::vector<fcl::Vec3f>& position, const std::vector<double>& radii)
-        // Get filename
         std::vector<fcl::Vec3f> position = read_points_from_matlab(prhs[2]);
         cc_instance->update_robot(position);
+        return;
+    }
+    if ( REMOVE_ROBOT_CMD_ID == cmd_id ) {
+        // Check parameters
+        // if (nlhs < 0 || nrhs < 3)
+        //     mexWarnMsgTxt("Insert: Unexpected arguments.");
+        cc_instance->remove_robot_from_environment();
         return;
     }
 
