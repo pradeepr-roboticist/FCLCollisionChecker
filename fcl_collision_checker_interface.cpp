@@ -12,6 +12,7 @@ using namespace fcl;
 
 const size_t NEW_CMD_ID = 0;
 const size_t DELETE_CMD_ID = 1;
+const size_t QUERY_DISTANCE_FROM_OBSTACLE_CMD_ID = 2;
 const size_t QUERY_COLLISION_CMD_ID = 3;
 const size_t QUERY_DISTANCE_CMD_ID = 4;
 const size_t LOAD_OBJECT_CMD_ID = 5;
@@ -113,20 +114,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     // Get the class instance pointer from the second input
     FCLCollisionChecker *cc_instance = convertMat2Ptr<FCLCollisionChecker>(prhs[1]);
 
-
-    if ( QUERY_COLLISION_CMD_ID == cmd_id ) {
-        // Check parameters
-        // if (nlhs < 0 || nrhs < 1)
-        //     mexWarnMsgTxt("Query: Unexpected arguments.");
+    if ( QUERY_DISTANCE_FROM_OBSTACLE_CMD_ID == cmd_id )
+    {
         if (nlhs == 1)
         {
-            std::cout << "MEX api side" << std::endl;
-            // plhs[0] = mxCreateNumericMatrix(1, 1, mxDOUBLE_CLASS, mxREAL);
-            // mxDouble* coll_val = mxGetDoubles(plhs[0]);
-            // *coll_val = cc_instance->query_collision()? 1:0;
-            plhs[0] = mxCreateLogicalMatrix(1, 1);
-            mxLogical* coll_val = mxGetLogicals(plhs[0]);
-            *coll_val = cc_instance->query_collision();
+            plhs[0] = mxCreateNumericMatrix(1, 1, mxDOUBLE_CLASS, mxREAL);
+            mxDouble* dist_val = mxGetDoubles(plhs[0]);
+            *dist_val = cc_instance->query_obstacle_distance_from_point(read_point_from_matlab(prhs[2]));
         }
         return;
     }
@@ -137,10 +131,25 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         //     mexWarnMsgTxt("Query: Unexpected arguments.");
         if (nlhs == 1)
         {
-            std::cout << "MEX api side" << std::endl;
+            // plhs[0] = mxCreateNumericMatrix(1, 1, mxDOUBLE_CLASS, mxREAL);
+            // mxDouble* coll_val = mxGetDoubles(plhs[0]);
+            // *coll_val = cc_instance->query_collision()? 1:0;
+            plhs[0] = mxCreateLogicalMatrix(1, 1);
+            mxLogical* coll_val = mxGetLogicals(plhs[0]);
+            *coll_val = cc_instance->query_collision();
+        }
+        return;
+    }
+
+    if ( QUERY_DISTANCE_CMD_ID == cmd_id ) {
+        // Check parameters
+        // if (nlhs < 0 || nrhs < 1)
+        //     mexWarnMsgTxt("Query: Unexpected arguments.");
+        if (nlhs == 1)
+        {
             plhs[0] = mxCreateNumericMatrix(1, 1, mxDOUBLE_CLASS, mxREAL);
-            mxDouble* coll_val = mxGetDoubles(plhs[0]);
-            *coll_val = cc_instance->query_distance();
+            mxDouble* dist_val = mxGetDoubles(plhs[0]);
+            *dist_val = cc_instance->query_distance();
         }
         return;
     }

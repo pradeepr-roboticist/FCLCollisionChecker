@@ -8,6 +8,7 @@ classdef FCLCollisionChecker < handle
     properties (Constant)
         NEW_CMD_ID = uint64(0);
         DELETE_CMD_ID = uint64(1);
+        QUERY_DISTANCE_FROM_OBSTACLE_CMD_ID = uint64(2);
         QUERY_COLLISION_CMD_ID = uint64(3);
         QUERY_DISTANCE_CMD_ID = uint64(4);
         LOAD_OBJECT_CMD_ID = uint64(5);
@@ -34,14 +35,20 @@ classdef FCLCollisionChecker < handle
             fcl_collision_checker_interface(FCLCollisionChecker.DELETE_CMD_ID, this.objectHandle);
         end
 
-        %% Update data
-        function varargout = update(this, varargin)
-            if isempty(varargin{1})
-                error('Need input: update(new_flag, [x, y, z])');
-            end
-            [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.UPDATE_CMD_ID, this.objectHandle, varargin{:});
+%         %% Update data
+%         function varargout = update(this, varargin)
+%             if isempty(varargin{1})
+%                 error('Need input: update(new_flag, [x, y, z])');
+%             end
+%             [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.UPDATE_CMD_ID, this.objectHandle, varargin{:});
+%         end
+        %% Get distance data from given point
+        function varargout = query_distance_from_obstacle(this, varargin)
+%             if isempty(varargin{1})
+%                 error('Need input: query([x, y, z])');
+%             end
+            [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.QUERY_DISTANCE_FROM_OBSTACLE_CMD_ID, this.objectHandle, varargin{:});
         end
-
         %% Get distance data
         function varargout = query_collision(this, varargin)
 %             if isempty(varargin{1})

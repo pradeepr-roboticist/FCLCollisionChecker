@@ -28,6 +28,8 @@
 #include "fcl/distance.h"                                                      
 #include "fcl/data_types.h"
 
+// #define DEBUG_MODE
+
 struct CollisionData
 {
   CollisionData()
@@ -100,15 +102,16 @@ class FCLCollisionChecker
     private:
         float resolution_;
 
-        // std::unique_ptr<fcl::DynamicAABBTreeCollisionManager> env_object_manager_;
-        std::shared_ptr<fcl::DynamicAABBTreeCollisionManager> env_object_manager_;
+        std::unique_ptr<fcl::DynamicAABBTreeCollisionManager> env_object_manager_;
+        // std::shared_ptr<fcl::DynamicAABBTreeCollisionManager> env_object_manager_;
         std::unordered_map<std::string, std::shared_ptr<fcl::OcTree>> object_octomap_cache_;
         std::unordered_map<std::string, std::shared_ptr<fcl::CollisionObject>> env_collision_object_cache_;
 
-        // std::unique_ptr<fcl::DynamicAABBTreeCollisionManager> robot_object_manager_;
-        std::shared_ptr<fcl::DynamicAABBTreeCollisionManager> robot_object_manager_;
+        std::unique_ptr<fcl::DynamicAABBTreeCollisionManager> robot_object_manager_;
+        // std::shared_ptr<fcl::DynamicAABBTreeCollisionManager> robot_object_manager_;
         std::vector<std::shared_ptr<fcl::CollisionObject>> robot_collision_object_cache_;
 
+        std::shared_ptr<fcl::CollisionObject> small_sphere_; // this is used to obtain the distance to closest obstacle
 
         std::shared_ptr<fcl::OcTree> read_from_file_(const char* filename)
         {
@@ -143,6 +146,9 @@ class FCLCollisionChecker
             env_object_manager_->setup();
             robot_object_manager_ = std::make_unique<fcl::DynamicAABBTreeCollisionManager>();
             robot_object_manager_->setup();
+
+            auto sphere = std::make_shared<fcl::Sphere>(0.01);
+            small_sphere_ = std::make_shared<fcl::CollisionObject>(sphere);
         }
         ~FCLCollisionChecker()
         {
@@ -210,13 +216,14 @@ class FCLCollisionChecker
         void update_object(const char* tag, const fcl::Matrix3f& R, const fcl::Vec3f& t)
         {
             auto env_obj = env_collision_object_cache_[tag];
-            std::cout << "Current transform of \"" << tag << "\"" << " t : " << env_obj->getTranslation() << std::endl;
-            std::cout << "Current transform of \"" << tag << "\"" << " R : " << env_obj->getRotation() << std::endl;
+            // std::cout << "Current transform of \"" << tag << "\"" << " t : " << env_obj->getTranslation() << std::endl;
+            // std::cout << "Current transform of \"" << tag << "\"" << " R : " << env_obj->getRotation() << std::endl;
             env_obj->setTranslation(t);
             env_obj->setRotation(R);
             // env_obj->setTransform(...); not working
-            std::cout << "Setting transform of \"" << tag << "\"" << " t : " << env_obj->getTranslation() << std::endl;
-            std::cout << "Setting transform of \"" << tag << "\"" << " R : " << env_obj->getRotation() << std::endl;
+            // std::cout << "Setting transform of \"" << tag << "\"" << " t : " << env_obj->getTranslation() << std::endl;
+            // std::cout << "Setting transform of \"" << tag << "\"" << " R : " << env_obj->getRotation() << std::endl;
+            std::cout << "Transform set for \"" << tag << "\"" << std::endl;
             // env_object_manager_->unregisterObject(env_obj.get());
         }
 
@@ -269,29 +276,44 @@ class FCLCollisionChecker
                 {
                     robot_collision_object_cache_[k]->setTranslation(positions_new[k]);
                 }
+                #ifdef DEBUG
                 std::cout << "Updated robot."<< std::endl;
+                #endif
             }
+        }
+
+        double query_obstacle_distance_from_point(const fcl::Vec3f& point)
+        {
+            small_sphere_->setTranslation(point);
+            DistanceData cdata;
+            env_object_manager_->distance(small_sphere_.get(), (void *)&cdata, defaultDistanceFunction_);
+
+            #ifdef DEBUG
+            std::cout << "Closest obstacle distance: " << cdata.result.min_distance << std::endl;
+            #endif
+            return cdata.result.min_distance;
         }
 
         double query_distance()
         {
-            std::cout << "In query distance" << std::endl;
-
             DistanceData cdata;
             robot_object_manager_->distance(env_object_manager_.get(), (void *)&cdata, defaultDistanceFunction_);
+            #ifdef DEBUG
             std::cout << "Min distance: " << cdata.result.min_distance << std::endl;
+            #endif
             return cdata.result.min_distance;
         }
         
         bool query_collision()
         {
-            std::cout << "In query collision" << std::endl;
 
             CollisionData cdata;
             cdata.request.num_max_contacts = 1;
             robot_object_manager_->collide(env_object_manager_.get(), (void *)&cdata, defaultCollisionFunction_);
 
             bool const ret_val = cdata.result.isCollision();
+            #ifdef DEBUG
+            std::cout << "In query collision" << std::endl;
             if (cdata.result.isCollision())
             {
                 std::cout << "Has collision" << std::endl;
@@ -300,6 +322,7 @@ class FCLCollisionChecker
             {
                 std::cout << "No collision" << std::endl;
             }
+            #endif
             
             return ret_val;
         }
