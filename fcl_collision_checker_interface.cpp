@@ -13,15 +13,16 @@ using namespace fcl;
 const size_t NEW_CMD_ID = 0;
 const size_t DELETE_CMD_ID = 1;
 const size_t UPDATE_CMD_ID = 2;
-const size_t QUERY_CMD_ID = 3;
-const size_t LOAD_OBJECT_CMD_ID = 4;
-const size_t LOAD_ROBOT_CMD_ID = 5;
-const size_t INSERT_OBJECT_CMD_ID = 6;
-const size_t INSERT_ROBOT_CMD_ID = 7;
-const size_t UPDATE_OBJECT_CMD_ID = 8;
-const size_t UPDATE_ROBOT_CMD_ID = 9;
-const size_t REMOVE_OBJECT_CMD_ID = 10;
-const size_t REMOVE_ROBOT_CMD_ID = 11;
+const size_t QUERY_COLLISION_CMD_ID = 3;
+const size_t QUERY_DISTANCE_CMD_ID = 4;
+const size_t LOAD_OBJECT_CMD_ID = 5;
+const size_t LOAD_ROBOT_CMD_ID = 6;
+const size_t INSERT_OBJECT_CMD_ID = 7;
+const size_t INSERT_ROBOT_CMD_ID = 8;
+const size_t UPDATE_OBJECT_CMD_ID = 9;
+const size_t UPDATE_ROBOT_CMD_ID = 10;
+const size_t REMOVE_OBJECT_CMD_ID = 11;
+const size_t REMOVE_ROBOT_CMD_ID = 12;
 
 fcl::Vec3f read_point_from_matlab(const mxArray* point_ptr)
 {
@@ -38,7 +39,8 @@ std::pair<fcl::Matrix3f, fcl::Vec3f> read_transform_matrix_from_matlab(const mxA
         mexErrMsgTxt("Wrong dimensions. Expected 4x4 matrix.");
     }
     fcl::Vec3f position(data_ptr[12], data_ptr[13], data_ptr[14]);
-    fcl::Matrix3f rotation({data_ptr[0], data_ptr[1], data_ptr[2]}, {data_ptr[4], data_ptr[5], data_ptr[6]}, {data_ptr[8], data_ptr[9], data_ptr[10]});
+    // fcl::Matrix3f rotation({data_ptr[0], data_ptr[1], data_ptr[2]}, {data_ptr[4], data_ptr[5], data_ptr[6]}, {data_ptr[8], data_ptr[9], data_ptr[10]});
+    fcl::Matrix3f rotation({data_ptr[0], data_ptr[4], data_ptr[4]}, {data_ptr[1], data_ptr[5], data_ptr[9]}, {data_ptr[2], data_ptr[6], data_ptr[10]}); // specified row wise [A;B;C] in matlab syntax
     return std::pair<fcl::Matrix3f, fcl::Vec3f>(rotation, position);
 }
 std::vector<fcl::Vec3f> read_points_from_matlab(const mxArray* points_ptr)
@@ -113,64 +115,37 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     FCLCollisionChecker *cc_instance = convertMat2Ptr<FCLCollisionChecker>(prhs[1]);
 
 
-    if ( QUERY_CMD_ID == cmd_id ) {
+    if ( QUERY_COLLISION_CMD_ID == cmd_id ) {
         // Check parameters
         // if (nlhs < 0 || nrhs < 1)
         //     mexWarnMsgTxt("Query: Unexpected arguments.");
-        
-        // // Get points
-        // const mxArray* points = prhs[2];
-        // const mxDouble *const loc = mxGetDoubles(points);
-        // const size_t rows = mxGetM(points);
-        // const size_t num_points = mxGetN(points);
-        // if (rows != 3)
-        // {
-        //     mexErrMsgTxt("Wrong dimensions for input points: points should be 3 x N");
-        // }
+        if (nlhs == 1)
+        {
+            std::cout << "MEX api side" << std::endl;
+            // plhs[0] = mxCreateNumericMatrix(1, 1, mxDOUBLE_CLASS, mxREAL);
+            // mxDouble* coll_val = mxGetDoubles(plhs[0]);
+            // *coll_val = cc_instance->query_collision()? 1:0;
+            plhs[0] = mxCreateLogicalMatrix(1, 1);
+            mxLogical* coll_val = mxGetLogicals(plhs[0]);
+            *coll_val = cc_instance->query_collision();
+        }
+        return;
+    }
 
-        // std::vector<octomap::point3d> closest_obstacles(num_points);
-        // std::vector<float> distances(num_points);
-
-        // size_t coord_counter = 0;
-        // for (size_t k = 0; k < num_points; k++)
-        // {
-        //     const octomap::point3d query(loc[coord_counter+0], loc[coord_counter+1], loc[coord_counter+2]);
-        //     coord_counter += 3;
-        //     float distance = -1;
-        //     octomap::point3d closest_obstacle;
-        //     cc_instance->get_distance_and_closest_obstacle(query, distance, closest_obstacle);
-
-        //     closest_obstacles[k] = closest_obstacle;
-        //     distances[k] = distance;
-        // }
-
-        // if (nlhs == 2)
-        // {
-        //     plhs[0] = mxCreateNumericMatrix(1, num_points, mxDOUBLE_CLASS, mxREAL);
-        //     mxDouble* ptr_dist = mxGetDoubles(plhs[0]);
-        //     plhs[1] = mxCreateNumericMatrix(3, num_points, mxDOUBLE_CLASS, mxREAL);
-        //     mxDouble* ptr_closest_obst = mxGetDoubles(plhs[1]);
-        //     // ptr_dist[0] = (double) distance;
-        //     size_t n = 0;
-        //     for (size_t k = 0; k < num_points; k++)
-        //     {
-        //         ptr_dist[k] = distances[k];
-        //         ptr_closest_obst[n++] = (double) closest_obstacles[k].x();
-        //         ptr_closest_obst[n++] = (double) closest_obstacles[k].y();
-        //         ptr_closest_obst[n++] = (double) closest_obstacles[k].z();
-        //     }
-
-        // }
-
+    if ( QUERY_COLLISION_CMD_ID == cmd_id ) {
+        // Check parameters
+        // if (nlhs < 0 || nrhs < 1)
+        //     mexWarnMsgTxt("Query: Unexpected arguments.");
         if (nlhs == 1)
         {
             std::cout << "MEX api side" << std::endl;
             plhs[0] = mxCreateNumericMatrix(1, 1, mxDOUBLE_CLASS, mxREAL);
             mxDouble* coll_val = mxGetDoubles(plhs[0]);
-            *coll_val = cc_instance->query_collision()? 1:0;
+            *coll_val = cc_instance->query_distance();
         }
         return;
     }
+
     if ( LOAD_OBJECT_CMD_ID == cmd_id ) {
         // Check parameters
         // if (nlhs < 0 || nrhs < 3)

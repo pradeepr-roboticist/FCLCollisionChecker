@@ -25,6 +25,8 @@
 #include "fcl/math/transform.h" 
 #include "fcl/collision_data.h"                                                      
 #include "fcl/collision_object.h"                                                      
+#include "fcl/distance.h"                                                      
+#include "fcl/data_types.h"
 
 struct CollisionData
 {
@@ -42,6 +44,40 @@ struct CollisionData
   /// @brief Whether the collision iteration can stop
   bool done;
 };
+struct DistanceData
+{
+  DistanceData()
+  {
+    done = false;
+  }
+
+  /// @brief Distance request
+  fcl::DistanceRequest request;
+
+  /// @brief Distance result
+  fcl::DistanceResult result;
+
+  /// @brief Whether the distance iteration can stop
+  bool done;
+
+};
+
+bool defaultDistanceFunction_(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* cdata_, fcl::FCL_REAL& dist)
+{
+  DistanceData* cdata = static_cast<DistanceData*>(cdata_);
+  const fcl::DistanceRequest& request = cdata->request;
+  fcl::DistanceResult& result = cdata->result;
+
+  if(cdata->done) { dist = result.min_distance; return true; }
+
+  fcl::distance(o1, o2, request, result);
+  
+  dist = result.min_distance;
+
+  if(dist <= 0) return true; // in collision or in touch
+
+  return cdata->done;
+}
 
 bool defaultCollisionFunction_(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* cdata_)
 {
@@ -163,13 +199,13 @@ class FCLCollisionChecker
         void update_object(const char* tag, const fcl::Matrix3f& R, const fcl::Vec3f& t)
         {
             auto env_obj = env_collision_object_cache_[tag];
-            // std::cout << "Current transform of \"" << tag << "\"" << " t : " << env_obj->getTranslation() << std::endl;
-            // std::cout << "Current transform of \"" << tag << "\"" << " R : " << env_obj->getRotation() << std::endl;
+            std::cout << "Current transform of \"" << tag << "\"" << " t : " << env_obj->getTranslation() << std::endl;
+            std::cout << "Current transform of \"" << tag << "\"" << " R : " << env_obj->getRotation() << std::endl;
             env_obj->setTranslation(t);
             env_obj->setRotation(R);
             // env_obj->setTransform(...); not working
-            // std::cout << "Setting transform of \"" << tag << "\"" << " t : " << env_obj->getTranslation() << std::endl;
-            // std::cout << "Setting transform of \"" << tag << "\"" << " R : " << env_obj->getRotation() << std::endl;
+            std::cout << "Setting transform of \"" << tag << "\"" << " t : " << env_obj->getTranslation() << std::endl;
+            std::cout << "Setting transform of \"" << tag << "\"" << " R : " << env_obj->getRotation() << std::endl;
             // env_object_manager_->unregisterObject(env_obj.get());
         }
 
@@ -225,6 +261,16 @@ class FCLCollisionChecker
                 std::cout << "Updated robot."<< std::endl;
             }
         }
+
+        double query_distance()
+        {
+            std::cout << "In query distance" << std::endl;
+
+            DistanceData cdata;
+            robot_object_manager_->distance(env_object_manager_.get(), (void *)&cdata, defaultDistanceFunction_);
+            std::cout << "Min distance: " << cdata.result.min_distance << std::endl;
+            return cdata.result.min_distance;
+        }
         
         bool query_collision()
         {
@@ -243,6 +289,7 @@ class FCLCollisionChecker
             {
                 std::cout << "No collision" << std::endl;
             }
+            
             return ret_val;
         }
 

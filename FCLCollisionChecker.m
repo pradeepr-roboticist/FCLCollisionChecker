@@ -9,15 +9,16 @@ classdef FCLCollisionChecker < handle
         NEW_CMD_ID = uint64(0);
         DELETE_CMD_ID = uint64(1);
         UPDATE_CMD_ID = uint64(2);
-        QUERY_CMD_ID = uint64(3);
-        LOAD_OBJECT_CMD_ID = uint64(4);
-        LOAD_ROBOT_CMD_ID = uint64(5);
-        INSERT_OBJECT_CMD_ID = uint64(6);
-        INSERT_ROBOT_CMD_ID = uint64(7);
-        UPDATE_OBJECT_CMD_ID = uint64(8);
-        UPDATE_ROBOT_CMD_ID = uint64(9);
-        REMOVE_OBJECT_CMD_ID = uint64(10);
-        REMOVE_ROBOT_CMD_ID = uint64(11);
+        QUERY_COLLISION_CMD_ID = uint64(3);
+        QUERY_DISTANCE_CMD_ID = uint64(4);
+        LOAD_OBJECT_CMD_ID = uint64(5);
+        LOAD_ROBOT_CMD_ID = uint64(6);
+        INSERT_OBJECT_CMD_ID = uint64(7);
+        INSERT_ROBOT_CMD_ID = uint64(8);
+        UPDATE_OBJECT_CMD_ID = uint64(9);
+        UPDATE_ROBOT_CMD_ID = uint64(10);
+        REMOVE_OBJECT_CMD_ID = uint64(11);
+        REMOVE_ROBOT_CMD_ID = uint64(12);
     end
     properties (SetAccess = private, Hidden = true)
         objectHandle; % Handle to the underlying C++ class instance
@@ -47,9 +48,14 @@ classdef FCLCollisionChecker < handle
 %             if isempty(varargin{1})
 %                 error('Need input: query([x, y, z])');
 %             end
-            [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.QUERY_CMD_ID, this.objectHandle, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.QUERY_COLLISION_CMD_ID, this.objectHandle, varargin{:});
         end
-
+        function varargout = query_distance(this, varargin)
+%             if isempty(varargin{1})
+%                 error('Need input: query([x, y, z])');
+%             end
+            [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.QUERY_DISTANCE_CMD_ID, this.objectHandle, varargin{:});
+        end
         %% Load object into cache
         function varargout = load_object_into_cache(this, varargin)
             if isempty(varargin{1}) || isempty(varargin{2})
