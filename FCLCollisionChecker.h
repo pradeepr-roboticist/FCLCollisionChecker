@@ -193,8 +193,19 @@ class FCLCollisionChecker
         }
         void remove_object_from_environment(const char* tag)
         {
-            auto env_obj = env_collision_object_cache_[tag];
-            env_object_manager_->unregisterObject(env_obj.get());
+            if (0 == env_collision_object_cache_.count(tag))
+            {
+                // object does not exist
+                std::cout << "Object \"" << tag << "\" does not exist."<< std::endl;
+            }
+            else
+            {
+                auto env_obj = env_collision_object_cache_[tag];
+                env_object_manager_->unregisterObject(env_obj.get());
+                env_collision_object_cache_.erase(tag);
+                std::cout << "Removed object \"" << tag << "\"" << std::endl;
+            }
+            
         }
         void update_object(const char* tag, const fcl::Matrix3f& R, const fcl::Vec3f& t)
         {

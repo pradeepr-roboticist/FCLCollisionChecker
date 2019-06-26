@@ -12,7 +12,6 @@ using namespace fcl;
 
 const size_t NEW_CMD_ID = 0;
 const size_t DELETE_CMD_ID = 1;
-const size_t UPDATE_CMD_ID = 2;
 const size_t QUERY_COLLISION_CMD_ID = 3;
 const size_t QUERY_DISTANCE_CMD_ID = 4;
 const size_t LOAD_OBJECT_CMD_ID = 5;

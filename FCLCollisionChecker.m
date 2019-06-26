@@ -8,7 +8,6 @@ classdef FCLCollisionChecker < handle
     properties (Constant)
         NEW_CMD_ID = uint64(0);
         DELETE_CMD_ID = uint64(1);
-        UPDATE_CMD_ID = uint64(2);
         QUERY_COLLISION_CMD_ID = uint64(3);
         QUERY_DISTANCE_CMD_ID = uint64(4);
         LOAD_OBJECT_CMD_ID = uint64(5);
