@@ -70,6 +70,9 @@ bool defaultDistanceFunction_(fcl::CollisionObject* o1, fcl::CollisionObject* o2
 {
   DistanceData* cdata = static_cast<DistanceData*>(cdata_);
   const fcl::DistanceRequest& request = cdata->request;
+
+//   std::cout << "Requesting points : " << request.enable_nearest_points << std::endl;
+
   fcl::DistanceResult& result = cdata->result;
 
   if(cdata->done) { dist = result.min_distance; return true; }
@@ -114,6 +117,7 @@ class FCLCollisionChecker
         std::vector<std::shared_ptr<fcl::CollisionObject>> robot_collision_object_cache_;
 
         std::shared_ptr<fcl::CollisionObject> small_sphere_; // this is used to obtain the distance to closest obstacle
+        double small_sphere_radius_;
 
         std::shared_ptr<fcl::OcTree> read_from_file_(const char* filename)
         {
@@ -149,7 +153,8 @@ class FCLCollisionChecker
             robot_object_manager_ = std::make_unique<fcl::DynamicAABBTreeCollisionManager>();
             robot_object_manager_->setup();
 
-            auto sphere = std::make_shared<fcl::Sphere>(0.01);
+            small_sphere_radius_ = 0.01;
+            auto sphere = std::make_shared<fcl::Sphere>(small_sphere_radius_);
             small_sphere_ = std::make_shared<fcl::CollisionObject>(sphere);
         }
         ~FCLCollisionChecker()
@@ -243,9 +248,9 @@ class FCLCollisionChecker
                 std::shared_ptr<fcl::CollisionObject> rob_obj = std::make_shared<fcl::CollisionObject>(sphere_k, tf0);
 
                 // std::string const name = std::string(tag) + std::to_string(k);
-                std::cout << "Loading robot ball " << std::to_string(k) << std::endl;
                 robot_collision_object_cache_.push_back(rob_obj);
             }
+            std::cout << "Loaded " << robot_collision_object_cache_.size() << " robot balls " << std::endl;
         }
 
         void insert_robot_into_environment()
@@ -284,24 +289,36 @@ class FCLCollisionChecker
             }
         }
 
-        std::vector<double> query_obstacle_distance_from_point(const std::vector<fcl::Vec3f>& point_list)
+        void query_obstacle_distance_from_point(const std::vector<fcl::Vec3f>& point_list, std::vector<double>& smallest_dists, std::vector<fcl::Vec3f>& closest_points)
         {
-            std::vector<double> ret;
-            auto func = [this](auto const &pt) -> auto { return this->query_obstacle_distance_from_point(pt); };
-            std::transform(point_list.begin(), point_list.end(), std::back_inserter(ret), func);
-            return ret;
+            for (auto it = point_list.begin(); it != point_list.end(); ++it)
+            {
+                double dist;
+                fcl::Vec3f point_a, point_b;
+                query_obstacle_distance_from_point_helper(*it, dist, point_a, point_b);
+                closest_points.push_back(point_b);
+                smallest_dists.push_back(dist);
+            }
+            // auto func = [this](auto const &pt) -> auto { return this->query_obstacle_distance_from_point(pt); };
+            // std::transform(point_list.begin(), point_list.end(), std::back_inserter(ret), func);
         }
 
-        double query_obstacle_distance_from_point(const fcl::Vec3f& point)
+        void query_obstacle_distance_from_point_helper(const fcl::Vec3f& point, double& smallest_dist, fcl::Vec3f& point_a, fcl::Vec3f& point_b)
         {
             small_sphere_->setTranslation(point);
             DistanceData cdata;
+            cdata.request.enable_nearest_points = true;
             env_object_manager_->distance(small_sphere_.get(), (void *)&cdata, defaultDistanceFunction_);
 
+            smallest_dist = cdata.result.min_distance + small_sphere_radius_;
+            point_a = cdata.result.nearest_points[0];
+            point_b = cdata.result.nearest_points[1];
+
+            // std::cout << "Point A: " << point_a << std::endl;
+            // std::cout << "Point B: " << point_b << std::endl;
             #ifdef DEBUG
             std::cout << "Closest obstacle distance: " << cdata.result.min_distance << std::endl;
             #endif
-            return cdata.result.min_distance;
         }
 
         double query_distance()

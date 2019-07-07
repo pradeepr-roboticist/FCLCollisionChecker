@@ -25,7 +25,24 @@ const size_t UPDATE_ROBOT_CMD_ID = 10;
 const size_t REMOVE_OBJECT_CMD_ID = 11;
 const size_t REMOVE_ROBOT_CMD_ID = 12;
 
-fcl::Vec3f read_point_from_matlab(const mxArray* point_ptr)
+void write_fcl_points_to_matlab(mxArray const* const points_ptr, std::vector<fcl::Vec3f> const& closest_point_list)
+{
+    mxDouble *const dbl_ptr = mxGetDoubles(points_ptr);
+    //column major
+    auto write_single_vec = [&dbl_ptr](const int idx, auto const &pt) -> int {
+        dbl_ptr[idx+0] = pt[0];
+        dbl_ptr[idx+1] = pt[1];
+        dbl_ptr[idx+2] = pt[2];
+        // std::cout << "\n Writing : " << pt[0] << "," << pt[1] << "," << pt[2] << std::endl;
+        return idx + 3;
+    };
+    int i = 0;
+    for (auto it = closest_point_list.cbegin(); it != closest_point_list.cend(); ++it)
+    {
+        i = write_single_vec(i, *it);
+    }
+}
+fcl::Vec3f read_point_from_matlab(mxArray const* point_ptr)
 {
     const mxDouble *const loc = mxGetDoubles(point_ptr);
     return fcl::Vec3f(loc[0], loc[1], loc[2]);
@@ -117,14 +134,23 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
     if ( QUERY_DISTANCE_FROM_OBSTACLE_CMD_ID == cmd_id )
     {
-        if (nlhs == 1)
-        {
-            auto point_list = read_points_from_matlab(prhs[2]);
-            plhs[0] = mxCreateNumericMatrix(1, point_list.size(), mxDOUBLE_CLASS, mxREAL);
-            auto dist_list = cc_instance->query_obstacle_distance_from_point(point_list);
-            mxDouble* dist_ptr = mxGetDoubles(plhs[0]);
-            std::copy(dist_list.begin(), dist_list.end(), dist_ptr);
-        }
+        // if (nlhs == 1)
+        // {
+        auto point_list = read_points_from_matlab(prhs[2]);
+        auto num_points = point_list.size();
+        plhs[0] = mxCreateNumericMatrix(1, num_points, mxDOUBLE_CLASS, mxREAL);
+        plhs[1] = mxCreateNumericMatrix(3, num_points, mxDOUBLE_CLASS, mxREAL);
+        std::vector<double> dist_list;
+        std::vector<fcl::Vec3f> closest_point_list;
+        dist_list.reserve(num_points);
+        closest_point_list.reserve(num_points);
+        cc_instance->query_obstacle_distance_from_point(point_list, dist_list, closest_point_list);
+
+        // Copy over data to matlab
+        mxDouble* dist_ptr = mxGetDoubles(plhs[0]);
+        std::copy(dist_list.begin(), dist_list.end(), dist_ptr);
+        write_fcl_points_to_matlab(plhs[1], closest_point_list);
+        // }
         return;
     }
 
