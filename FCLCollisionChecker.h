@@ -7,6 +7,8 @@
  */
 
 #include <iostream>
+#include <algorithm>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <string>
@@ -280,6 +282,14 @@ class FCLCollisionChecker
                 std::cout << "Updated robot."<< std::endl;
                 #endif
             }
+        }
+
+        std::vector<double> query_obstacle_distance_from_point(const std::vector<fcl::Vec3f>& point_list)
+        {
+            std::vector<double> ret;
+            auto func = [this](auto const &pt) -> auto { return this->query_obstacle_distance_from_point(pt); };
+            std::transform(point_list.begin(), point_list.end(), std::back_inserter(ret), func);
+            return ret;
         }
 
         double query_obstacle_distance_from_point(const fcl::Vec3f& point)

@@ -8,6 +8,7 @@
 #include "class_handle.hpp"
 
 #include <iostream>
+#include <algorithm>
 using namespace fcl;
 
 const size_t NEW_CMD_ID = 0;
@@ -118,9 +119,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     {
         if (nlhs == 1)
         {
-            plhs[0] = mxCreateNumericMatrix(1, 1, mxDOUBLE_CLASS, mxREAL);
-            mxDouble* dist_val = mxGetDoubles(plhs[0]);
-            *dist_val = cc_instance->query_obstacle_distance_from_point(read_point_from_matlab(prhs[2]));
+            auto point_list = read_points_from_matlab(prhs[2]);
+            plhs[0] = mxCreateNumericMatrix(1, point_list.size(), mxDOUBLE_CLASS, mxREAL);
+            auto dist_list = cc_instance->query_obstacle_distance_from_point(point_list);
+            mxDouble* dist_ptr = mxGetDoubles(plhs[0]);
+            std::copy(dist_list.begin(), dist_list.end(), dist_ptr);
         }
         return;
     }
