@@ -11,7 +11,7 @@ I need FCL 0.5 for handling octomap collision detection. But, it does not work w
 
 Strangely enough, in FCL 0.6, collision detection with octomap did not work as expected. Collision detections were spotty and quite random. I wasted a day trying find out the source of the problem but I could not figure it out.
 
-So, the hack proceeds as follows. I use both FCL 0.5 and FCL 0.6. I use a preprocessor directive "FCL_NEW" and "FCL_OLD" in the code files "FCLCollisionChecker.h" and "fcl_collision_checker_interface.cpp". From "compile_mfcl.m", I compile the MEX wrapper twice once for each library. Thus, I end up having "fcl_collision_checker_interface_fcl_new" and  "fcl_collision_checker_interface_fcl_old".
+So, the hack proceeds as follows. I use both FCL 0.5 and FCL 0.6. I use a preprocessor directive "FCL_NEW" and "FCL_OLD" in the code files "FCLCollisionChecker.h" and "fcl_collision_checker_interface.cpp". From "compile_mfcl.m", I compile the MEX wrapper twice (once for each library). Thus, I end up having "fcl_collision_checker_interface_fcl_new" and  "fcl_collision_checker_interface_fcl_old".
 
 I use these two MEX files in unison via "FCLCollisionChecker.m" class file. Every operation is duplicated on both MEX interfaces except the following. Pointer (handles) to each interface is separate. And, collision detection queries are made only via "fcl_collision_checker_interface_fcl_old" and distance queries are made with "fcl_collision_checker_interface_fcl_new".
 
