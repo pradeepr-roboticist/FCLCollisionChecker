@@ -44,7 +44,7 @@
 #include "fcl/data_types.h"
 #endif
 
-#define DEBUG
+// #define DEBUG
 
 #ifdef FCL_NEW
 using S = double;
@@ -136,7 +136,7 @@ bool defaultCollisionFunction_(fcl::CollisionObject<S>* o1, fcl::CollisionObject
 bool defaultCollisionFunction_(fcl::CollisionObject* o1, fcl::CollisionObject* o2, void* cdata_)
 {
 #endif
-    std::cout << "Came here: o1 : \n" << o1->getTranslation() << " , o2: \n" << o2->getTranslation() << std::endl;
+    // std::cout << "Came here: o1 : \n" << o1->getTranslation() << " , o2: \n" << o2->getTranslation() << std::endl;
     // CollisionData<S> *cdata = static_cast<CollisionData<S> *>(cdata_);
     // const fcl::CollisionRequest<S>& request = cdata->request;
     // fcl::CollisionResult<S>& result = cdata->result;
