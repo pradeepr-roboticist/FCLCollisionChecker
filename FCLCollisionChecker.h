@@ -273,32 +273,39 @@ class FCLCollisionChecker
         void insert_object_into_environment(const char* tag, const fcl::Vec3f& position)
 #endif
         {
-            #ifdef DEBUG
-            std::cout << "Trying to insert \"" << tag << "\""
-                      << " at \n " << position << std::endl;
-            #endif
+//             #ifdef DEBUG
+//             std::cout << "Trying to insert \"" << tag << "\""
+//                       << " at \n " << position << std::endl;
+//             #endif
             auto tree_fcl = object_octomap_cache_[tag];
-#ifdef FCL_NEW
-            fcl::Transform3<S> tf0;
-            tf0.translation() = fcl::Vector3<S>(position[0], position[1], position[2]);
-            #ifdef DEBUG
-            std::cout << "TF0 x: " << tf0(0, 3) << std::endl;
-            std::cout << "TF0 y: " << tf0(1, 3) << std::endl;
-            std::cout << "TF0 z: " << tf0(2, 3) << std::endl;
-            #endif
-#elif FCL_OLD
-            fcl::Transform3f tf0;
-            tf0.setTranslation(fcl::Vec3f(position[0], position[1], position[2]));
-#endif
+// #ifdef FCL_NEW
+//             fcl::Transform3<S> tf0;
+//             tf0.translation() = fcl::Vector3<S>(position[0], position[1], position[2]);
+//             #ifdef DEBUG
+//             std::cout << "TF0 x: " << tf0(0, 3) << std::endl;
+//             std::cout << "TF0 y: " << tf0(1, 3) << std::endl;
+//             std::cout << "TF0 z: " << tf0(2, 3) << std::endl;
+//             #endif
+// #elif FCL_OLD
+//             fcl::Transform3f tf0;
+//             tf0.setTranslation(fcl::Vec3f(position[0], position[1], position[2]));
+// #endif
             // Based on the discussion at https://stackoverflow.com/questions/13403490/passing-shared-ptrderived-as-shared-ptrbase
             // and the reference at http://www.cplusplus.com/reference/memory/static_pointer_cast/
 #ifdef FCL_NEW
             auto geom = std::static_pointer_cast<fcl::CollisionGeometry<S>>(tree_fcl);
-            std::shared_ptr<fcl::CollisionObject<S>> env_obj = std::make_shared<fcl::CollisionObject<S>>(geom, tf0);
+            std::shared_ptr<fcl::CollisionObject<S>> env_obj = std::make_shared<fcl::CollisionObject<S>>(geom);
+            auto R = fcl::Matrix3<S>::Identity();
 #elif FCL_OLD
             auto geom = std::static_pointer_cast<fcl::CollisionGeometry>(tree_fcl);
-            std::shared_ptr<fcl::CollisionObject> env_obj = std::make_shared<fcl::CollisionObject>(geom, tf0);
+            std::shared_ptr<fcl::CollisionObject> env_obj = std::make_shared<fcl::CollisionObject>(geom);
+            auto R = fcl::Matrix3f();
+            R.setIdentity();
 #endif
+            
+            env_obj->setTranslation(position);
+            env_obj->setRotation(R);
+            
             env_collision_object_cache_[tag] = env_obj;
             env_object_manager_->registerObject(env_obj.get());
             std::cout << "Inserted \"" << tag << "\"" << std::endl;

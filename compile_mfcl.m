@@ -10,6 +10,9 @@
 % LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu \
 
 % We just use static linking here
+
+warning('Ensure fcl_old and fcl_new are built');
+
 mex -R2018a ...
     -DFCL_NEW ...
     -output fcl_collision_checker_interface_fcl_new ...

@@ -2,7 +2,8 @@
 
 1. Ensure libccd is installed.
 2. Ensure octomap is installed.
-3. Install both FCL 0.5 and 0.6. See below.
+3. Make sure FCL is not installed on /usr/local/include/. It will have conflicts. If possible rename the fcl directory, to say "fcl_bkp".
+4. Install both FCL 0.5 and 0.6. See below.
 4. Go through "compile_mfcl.m" and ensure each listed package is available at the specific location on the filesystem
 
 
@@ -15,7 +16,7 @@ So, the hack proceeds as follows. I use both FCL 0.5 and FCL 0.6. I use a prepro
 
 I use these two MEX files in unison via "FCLCollisionChecker.m" class file. Every operation is duplicated on both MEX interfaces except the following. Pointer (handles) to each interface is separate. And, collision detection queries are made only via "fcl_collision_checker_interface_fcl_old" and distance queries are made with "fcl_collision_checker_interface_fcl_new".
 
-WARNING: For some bizarre, reason you need to "move" the objects added to the environment at least once globally for distance computation to work in FCL 0.6. i.e. you need to issue an "update_object" command with R = eye(3) and t = zeros(3, 1). An easy way to do this is to use "interactive_object.translate([0 0 0])".
+WARNING: This has been taken care of within FCLCollisionChecker.h already. But, it is good to know. For some bizarre, reason you need to "move" the objects added to the environment at least once globally for distance computation to work in FCL 0.6. i.e. you need to issue an "update_object" command with R = eye(3) and t = zeros(3, 1). An easy way to do this is to use "interactive_object.translate([0 0 0])".
 
 # Installing FCL 0.6
 1. Clone the FCL repository into fcl_new. Be sure to checkout master branch.
