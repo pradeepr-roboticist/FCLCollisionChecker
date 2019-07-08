@@ -21,102 +21,106 @@ classdef FCLCollisionChecker < handle
         REMOVE_ROBOT_CMD_ID = uint64(12);
     end
     properties (SetAccess = private, Hidden = true)
-        objectHandle; % Handle to the underlying C++ class instance
+        objectHandle_old; % Handle to the underlying C++ class instance
+        objectHandle_new;
     end
     methods
         %% Constructor - Create a new C++ class instance 
         function this = FCLCollisionChecker(varargin)
-            this.objectHandle = fcl_collision_checker_interface(FCLCollisionChecker.NEW_CMD_ID, varargin{:});
+            this.objectHandle_new = fcl_collision_checker_interface_fcl_new(FCLCollisionChecker.NEW_CMD_ID, varargin{:});
+            this.objectHandle_old = fcl_collision_checker_interface_fcl_old(FCLCollisionChecker.NEW_CMD_ID, varargin{:});
         end
         
         %% Destructor - Destroy the C++ class instance
         function delete(this)
             warning('Deleting FCLCollisionChecker instance');
-            fcl_collision_checker_interface(FCLCollisionChecker.DELETE_CMD_ID, this.objectHandle);
+            fcl_collision_checker_interface_fcl_new(FCLCollisionChecker.DELETE_CMD_ID, this.objectHandle_new);
+            fcl_collision_checker_interface_fcl_old(FCLCollisionChecker.DELETE_CMD_ID, this.objectHandle_old);
         end
 
-%         %% Update data
-%         function varargout = update(this, varargin)
-%             if isempty(varargin{1})
-%                 error('Need input: update(new_flag, [x, y, z])');
-%             end
-%             [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.UPDATE_CMD_ID, this.objectHandle, varargin{:});
-%         end
         %% Get distance data from given point
         function varargout = query_distance_from_obstacle(this, varargin)
 %             if isempty(varargin{1})
 %                 error('Need input: query([x, y, z])');
 %             end
-            [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.QUERY_DISTANCE_FROM_OBSTACLE_CMD_ID, this.objectHandle, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface_fcl_new(FCLCollisionChecker.QUERY_DISTANCE_FROM_OBSTACLE_CMD_ID, this.objectHandle_new, varargin{:});
         end
-        %% Get distance data
+        %% Get collision data
         function varargout = query_collision(this, varargin)
 %             if isempty(varargin{1})
 %                 error('Need input: query([x, y, z])');
 %             end
-            [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.QUERY_COLLISION_CMD_ID, this.objectHandle, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface_fcl_old(FCLCollisionChecker.QUERY_COLLISION_CMD_ID, this.objectHandle_old, varargin{:});
         end
         function varargout = query_distance(this, varargin)
 %             if isempty(varargin{1})
 %                 error('Need input: query([x, y, z])');
 %             end
-            [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.QUERY_DISTANCE_CMD_ID, this.objectHandle, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface_fcl_old(FCLCollisionChecker.QUERY_DISTANCE_CMD_ID, this.objectHandle_old, varargin{:});
         end
         %% Load object into cache
         function varargout = load_object_into_cache(this, varargin)
             if isempty(varargin{1}) || isempty(varargin{2})
                 error('Need input: load_object_into_cache(filename, tag)');
             end
-            [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.LOAD_OBJECT_CMD_ID, this.objectHandle, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface_fcl_new(FCLCollisionChecker.LOAD_OBJECT_CMD_ID, this.objectHandle_new, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface_fcl_old(FCLCollisionChecker.LOAD_OBJECT_CMD_ID, this.objectHandle_old, varargin{:});
         end
         %% Insert object into environment
         function varargout = insert_object_into_environment(this, varargin)
             if isempty(varargin{1}) || isempty(varargin{2})
                 error('Need input: insert_object_into_environment(tag, position)');
             end
-            [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.INSERT_OBJECT_CMD_ID, this.objectHandle, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface_fcl_new(FCLCollisionChecker.INSERT_OBJECT_CMD_ID, this.objectHandle_new, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface_fcl_old(FCLCollisionChecker.INSERT_OBJECT_CMD_ID, this.objectHandle_old, varargin{:});
         end
         %% Load robot into cache
         function varargout = load_robot_into_cache(this, varargin)
             if isempty(varargin{1})
                 error('Need input: load_robot_into_cache(tag, ...)');
             end
-            [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.LOAD_ROBOT_CMD_ID, this.objectHandle, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface_fcl_new(FCLCollisionChecker.LOAD_ROBOT_CMD_ID, this.objectHandle_new, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface_fcl_old(FCLCollisionChecker.LOAD_ROBOT_CMD_ID, this.objectHandle_old, varargin{:});
         end
         %% Insert robot into environment
         function varargout = insert_robot_into_environment(this, varargin)
 %             if isempty(varargin{1})
 %                 error('Need input: insert_robot_into_environment()');
 %             end
-            [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.INSERT_ROBOT_CMD_ID, this.objectHandle, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface_fcl_new(FCLCollisionChecker.INSERT_ROBOT_CMD_ID, this.objectHandle_new, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface_fcl_old(FCLCollisionChecker.INSERT_ROBOT_CMD_ID, this.objectHandle_old, varargin{:});
         end
         %% Update object
         function varargout = update_object(this, varargin)
 %             if isempty(varargin{1})
 %                 error('Need input: insert_robot_into_environment()');
 %             end
-            [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.UPDATE_OBJECT_CMD_ID, this.objectHandle, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface_fcl_new(FCLCollisionChecker.UPDATE_OBJECT_CMD_ID, this.objectHandle_new, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface_fcl_old(FCLCollisionChecker.UPDATE_OBJECT_CMD_ID, this.objectHandle_old, varargin{:});
         end
         %% Update robot
         function varargout = update_robot(this, varargin)
 %             if isempty(varargin{1})
 %                 error('Need input: insert_robot_into_environment()');
 %             end
-            [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.UPDATE_ROBOT_CMD_ID, this.objectHandle, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface_fcl_new(FCLCollisionChecker.UPDATE_ROBOT_CMD_ID, this.objectHandle_new, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface_fcl_old(FCLCollisionChecker.UPDATE_ROBOT_CMD_ID, this.objectHandle_old, varargin{:});
         end
         %% Remove object
         function varargout = remove_object(this, varargin)
 %             if isempty(varargin{1})
 %                 error('Need input: insert_robot_into_environment()');
 %             end
-            [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.REMOVE_OBJECT_CMD_ID, this.objectHandle, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface_fcl_new(FCLCollisionChecker.REMOVE_OBJECT_CMD_ID, this.objectHandle_new, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface_fcl_old(FCLCollisionChecker.REMOVE_OBJECT_CMD_ID, this.objectHandle_old, varargin{:});
         end
         %% Remove robot
         function varargout = remove_robot(this, varargin)
 %             if isempty(varargin{1})
 %                 error('Need input: insert_robot_into_environment()');
 %             end
-            [varargout{1:nargout}] = fcl_collision_checker_interface(FCLCollisionChecker.REMOVE_ROBOT_CMD_ID, this.objectHandle, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface_fcl_new(FCLCollisionChecker.REMOVE_ROBOT_CMD_ID, this.objectHandle_new, varargin{:});
+            [varargout{1:nargout}] = fcl_collision_checker_interface_fcl_old(FCLCollisionChecker.REMOVE_ROBOT_CMD_ID, this.objectHandle_old, varargin{:});
         end
     end
 end
