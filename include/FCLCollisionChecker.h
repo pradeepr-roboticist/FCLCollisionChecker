@@ -29,6 +29,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <set>
 
 #if defined(FCL_NEW) || defined(FCL_OLD)
 #else
@@ -75,6 +76,8 @@ struct CollisionData
   CollisionData()
   {
     done = false;
+    collision_object_a = nullptr;
+    collision_object_b = nullptr;
   }
 
   /// @brief Collision request
@@ -90,6 +93,13 @@ struct CollisionData
 
   /// @brief Whether the collision iteration can stop
   bool done;
+#ifdef FCL_NEW
+  fcl::CollisionObject<S>* collision_object_a = nullptr;
+  fcl::CollisionObject<S>* collision_object_b = nullptr;
+#elif FCL_OLD
+  fcl::CollisionObject* collision_object_a = nullptr;
+  fcl::CollisionObject* collision_object_b = nullptr;
+#endif
 };
 
 #ifdef FCL_NEW
@@ -179,7 +189,11 @@ bool defaultCollisionFunction_(fcl::CollisionObject* o1, fcl::CollisionObject* o
   fcl::collide(o1, o2, request, result);
 
   if(!request.enable_cost && (result.isCollision()) && (result.numContacts() >= request.num_max_contacts))
+  {
     cdata->done = true;
+    cdata->collision_object_a = o1;
+    cdata->collision_object_b = o2;
+  }
 
   return cdata->done;
 }
@@ -492,14 +506,14 @@ class FCLCollisionChecker
             return cdata.result.min_distance;
         }
         
-        bool query_collision()
+        void query_collision(bool* collision_flag, std::vector<int>& robot_ball_ids, int32_t num_contacts=1)
         {
 #ifdef FCL_NEW
             CollisionData<S> cdata;
 #elif FCL_OLD
             CollisionData cdata;
 #endif
-            cdata.request.num_max_contacts = 1;
+            cdata.request.num_max_contacts = num_contacts;
             robot_object_manager_->collide(env_object_manager_.get(), (void *)&cdata, defaultCollisionFunction_);
 
             // fcl::Transform3d tf1;
@@ -520,8 +534,52 @@ class FCLCollisionChecker
             // tmp->collide(obj0.get(), (void *)&cdata, defaultCollisionFunction_);
             // robot_object_manager_->collide(obj1.get(), (void *)&cdata, defaultCollisionFunction_);
 
-            bool const ret_val = cdata.result.isCollision();
-            #ifdef DEBUG
+            *collision_flag = cdata.result.isCollision();
+            if (true == cdata.result.isCollision())
+            {
+
+#ifdef FCL_NEW
+              std::set<const fcl::CollisionGeometry<S>*> robot_geometry;
+              std::set<const fcl::CollisionGeometry<S>*> contact_geometry;
+              std::set<const fcl::CollisionGeometry<S>*> common_geometry;
+#elif FCL_OLD
+              std::set<const fcl::CollisionGeometry*> robot_geometry;
+              std::set<const fcl::CollisionGeometry*> contact_geometry;
+              std::set<const fcl::CollisionGeometry*> common_geometry;
+#endif
+              for (size_t k = 0; k < cdata.result.numContacts(); ++k)
+              {
+                contact_geometry.insert(cdata.result.getContact(k).o1);
+                contact_geometry.insert(cdata.result.getContact(k).o2);
+              }
+              // std::cout << "CG size: " << contact_geometry.size() << std::endl;
+              // contact_geometry.insert(cdata.result.)
+              // std::vector<int> robot_ball_ids;
+              robot_ball_ids.reserve(robot_collision_object_cache_.size());
+              for (auto it = robot_collision_object_cache_.begin(); it != robot_collision_object_cache_.end(); ++it)
+              {
+                // robot_geometry.insert(it->get()->collisionGeometry().get());
+                if (contact_geometry.end() != contact_geometry.find(it->get()->collisionGeometry().get()))
+                {
+                  robot_ball_ids.push_back(it - robot_collision_object_cache_.begin());
+                  // std::cout << "ball id: " <<  it - robot_collision_object_cache_.begin() << std::endl;
+
+                }
+              }
+              // set_intersection(robot_geometry.begin(),robot_geometry.end(),contact_geometry.begin(),contact_geometry.end(), std::inserter(common_geometry,common_geometry.begin()));
+
+
+              // for (auto it = robot_collision_object_cache_.begin(); it != robot_collision_object_cache_.end(); ++it)
+              // {
+              //   if ((it->get() == cdata.collision_object_a) || (it->get() == cdata.collision_object_b))
+              //   {
+              //     // std::cout << "Object: " << it - robot_collision_object_cache_.begin() << std::endl;
+              //     // std::cout << "Location: " << it->get()->getTranslation() << std::endl;
+              //     *robot_ball_id = it - robot_collision_object_cache_.begin();
+              //   }
+              // }
+            }
+#ifdef DEBUG
             std::cout << "In query collision" << std::endl;
             if (cdata.result.isCollision())
             {
@@ -531,9 +589,7 @@ class FCLCollisionChecker
             {
                 std::cout << "No collision" << std::endl;
             }
-            #endif
-            
-            return ret_val;
+#endif
         }
 
 };

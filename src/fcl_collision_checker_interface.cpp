@@ -239,14 +239,20 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         // Check parameters
         // if (nlhs < 0 || nrhs < 1)
         //     mexWarnMsgTxt("Query: Unexpected arguments.");
-        if (nlhs == 1)
+        if (nlhs == 2)
         {
-            // plhs[0] = mxCreateNumericMatrix(1, 1, mxDOUBLE_CLASS, mxREAL);
-            // mxDouble* coll_val = mxGetDoubles(plhs[0]);
-            // *coll_val = cc_instance->query_collision()? 1:0;
+            std::vector<int> robot_ball_ids;
             plhs[0] = mxCreateLogicalMatrix(1, 1);
             mxLogical* coll_val = mxGetLogicals(plhs[0]);
-            *coll_val = cc_instance->query_collision();
+
+            int num_contacts_max = 1;
+            if (nrhs == 3) num_contacts_max = mxGetScalar(prhs[2]); // get max number of contacts (to exhaustively perform collision detection)
+            cc_instance->query_collision(coll_val, robot_ball_ids, num_contacts_max);
+
+            // std::cout << "IDs size: " << robot_ball_ids.size() << std::endl;
+            plhs[1] = mxCreateNumericMatrix(1, robot_ball_ids.size(), mxINT32_CLASS, mxREAL);
+            mxInt32* robot_ball_id_ptr = mxGetInt32s(plhs[1]);
+            std::copy(robot_ball_ids.begin(), robot_ball_ids.end(), robot_ball_id_ptr);
         }
         return;
     }
