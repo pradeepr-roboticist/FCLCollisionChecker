@@ -239,14 +239,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         // Check parameters
         // if (nlhs < 0 || nrhs < 1)
         //     mexWarnMsgTxt("Query: Unexpected arguments.");
-        if (nlhs == 1)
+        if (nlhs == 2)
         {
             // plhs[0] = mxCreateNumericMatrix(1, 1, mxDOUBLE_CLASS, mxREAL);
             // mxDouble* coll_val = mxGetDoubles(plhs[0]);
             // *coll_val = cc_instance->query_collision()? 1:0;
             plhs[0] = mxCreateLogicalMatrix(1, 1);
+            plhs[1] = mxCreateNumericMatrix(1, 1, mxINT32_CLASS, mxREAL);
             mxLogical* coll_val = mxGetLogicals(plhs[0]);
-            *coll_val = cc_instance->query_collision();
+            mxInt32* robot_ball_id = mxGetInt32s(plhs[1]);
+            cc_instance->query_collision(coll_val, robot_ball_id);
         }
         return;
     }
