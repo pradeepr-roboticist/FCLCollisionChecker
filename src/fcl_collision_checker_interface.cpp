@@ -243,6 +243,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
         {
             std::vector<int> robot_ball_ids;
             plhs[0] = mxCreateLogicalMatrix(1, 1);
+            
             mxLogical* coll_val = mxGetLogicals(plhs[0]);
 
             int num_contacts_max = 1;
