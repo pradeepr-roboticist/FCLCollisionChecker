@@ -515,25 +515,6 @@ class FCLCollisionChecker
 #endif
             cdata.request.num_max_contacts = num_contacts;
             robot_object_manager_->collide(env_object_manager_.get(), (void *)&cdata, defaultCollisionFunction_);
-
-            // fcl::Transform3d tf1;
-            // tf1.translation() = fcl::Vector3<S>(0, 0, 0);
-            // auto sphere1 = std::make_shared<fcl::Sphere<S>>(0.35);
-            // auto obj1 = std::make_shared<fcl::CollisionObject<S>>(sphere1, tf1);
-            // std::cout << " We know that 0\n" << obj1->getTranslation() << std::endl;
-            // auto tmp = std::make_unique<fcl::DynamicAABBTreeCollisionManager<S>>();
-            // tmp->setup();
-            // tmp->registerObject(obj1.get());
-
-            // fcl::Transform3d tf0;
-            // tf0.translation() = fcl::Vector3<S>(0.5, 0, 0);
-
-            // auto sphere = std::make_shared<fcl::Sphere<S>>(0.2);
-            // auto obj0 = std::make_shared<fcl::CollisionObject<S>>(sphere, tf0);
-            // std::cout << " We know that 0\n" << obj0->getTranslation() << std::endl;
-            // tmp->collide(obj0.get(), (void *)&cdata, defaultCollisionFunction_);
-            // robot_object_manager_->collide(obj1.get(), (void *)&cdata, defaultCollisionFunction_);
-
             *collision_flag = cdata.result.isCollision();
             if (true == cdata.result.isCollision())
             {
@@ -566,18 +547,6 @@ class FCLCollisionChecker
 
                 }
               }
-              // set_intersection(robot_geometry.begin(),robot_geometry.end(),contact_geometry.begin(),contact_geometry.end(), std::inserter(common_geometry,common_geometry.begin()));
-
-
-              // for (auto it = robot_collision_object_cache_.begin(); it != robot_collision_object_cache_.end(); ++it)
-              // {
-              //   if ((it->get() == cdata.collision_object_a) || (it->get() == cdata.collision_object_b))
-              //   {
-              //     // std::cout << "Object: " << it - robot_collision_object_cache_.begin() << std::endl;
-              //     // std::cout << "Location: " << it->get()->getTranslation() << std::endl;
-              //     *robot_ball_id = it - robot_collision_object_cache_.begin();
-              //   }
-              // }
             }
 #ifdef DEBUG
             std::cout << "In query collision" << std::endl;
