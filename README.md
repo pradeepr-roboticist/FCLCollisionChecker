@@ -39,11 +39,13 @@ https://www.mathworks.com/matlabcentral/fileexchange/51200-stltools?focused=3878
 
 ## Installation Notes
 
-1. Ensure libccd is installed.
-2. Ensure octomap is installed.
-3. Make sure FCL is not installed on /usr/local/include/. It will have conflicts. If possible rename the fcl directory, to say "fcl_bkp".
-4. Install both FCL 0.5 and 0.6. See below.
-5. Go through "compile_mfcl.m" and ensure each listed package is available at the specific location on the filesystem
+1. ~~Ensure libccd is installed.~~
+2. ~~Ensure octomap is installed.
+3. ~~Make sure FCL is not installed on /usr/local/include/. It will have conflicts. If possible rename the fcl directory, to say "fcl_bkp".~~
+4. ~~Install both FCL 0.5 and 0.6. See below.
+5. ~~Go through "compile_mfcl.m" and ensure each listed package is available at the specific location on the filesystem
+
+1. Run "prep_dependencies.sh" from the root of the repo
 
 
 # Why do you need both FCL 0.5 and 0.6?
@@ -66,10 +68,12 @@ WARNING: This has been taken care of within FCLCollisionChecker.h already. But, 
 3. Then, sudo make install
 4. Get rid of .git folder
 
-## Usage
+## C++ wrapper usage
 1) Download or clone this repo into your folder.
-2) Run the script "run_me.m".
-3) Star this repo if you like it.
+2) Run the script "prep_dependencies.sh".
+3) Checkout the "examples" folder.
+4) Be sure to compile using "build.sh"
+
 
 ## Some tips
 1) You need to have set a MEX compiler for this to work
