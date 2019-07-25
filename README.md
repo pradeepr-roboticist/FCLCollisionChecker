@@ -27,7 +27,7 @@ https://www.mathworks.com/matlabcentral/fileexchange/38964-example-matlab-class-
 2) FCL library
 https://github.com/flexible-collision-library/fcl
 
-3) binvox exectuable
+3) binvox executable
 https://www.patrickmin.com/binvox/download.php?id=4
 
 4) Octomap library
