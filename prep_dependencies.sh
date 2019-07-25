@@ -13,6 +13,8 @@ git clone -b $FCL_OLD_BRANCH https://github.com/flexible-collision-library/fcl .
 git clone -b $FCL_NEW_BRANCH https://github.com/flexible-collision-library/fcl ./dependencies/fcl_new/fcl
 git clone -b master https://github.com/OctoMap/octomap ./dependencies/octomap/
 
+sudo apt-get install libccd-dev
+
 ROOT_FOLDER=$PWD
 echo "Building packages ..."
 cd dependencies/fcl_old/fcl && \

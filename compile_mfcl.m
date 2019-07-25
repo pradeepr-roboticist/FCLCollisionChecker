@@ -11,7 +11,7 @@
 
 % We just use static linking here
 
-warning('Ensure fcl_old and fcl_new are built by running the script "prep_dependencies.sh"');
+error('Ensure fcl_old and fcl_new are built by running the script "prep_dependencies.sh". Then, comment this line out.');
 
 mex -R2018a ...
     -DFCL_NEW ...

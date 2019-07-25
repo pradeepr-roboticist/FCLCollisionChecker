@@ -122,7 +122,7 @@ std::pair<fcl::Matrix3f, fcl::Vec3f> read_transform_matrix_from_matlab(const mxA
     return std::pair<fcl::Matrix3<S>, fcl::Vector3<S>>(rotation, position);
 #elif FCL_OLD
     fcl::Vec3f position(data_ptr[12], data_ptr[13], data_ptr[14]);
-    fcl::Matrix3f rotation({data_ptr[0], data_ptr[4], data_ptr[4]}, {data_ptr[1], data_ptr[5], data_ptr[9]}, {data_ptr[2], data_ptr[6], data_ptr[10]}); // specified row wise [A;B;C] in matlab syntax
+    fcl::Matrix3f rotation({data_ptr[0], data_ptr[4], data_ptr[8]}, {data_ptr[1], data_ptr[5], data_ptr[9]}, {data_ptr[2], data_ptr[6], data_ptr[10]}); // specified row wise [A;B;C] in matlab syntax
     return std::pair<fcl::Matrix3f, fcl::Vec3f>(rotation, position);
 #endif
 }
