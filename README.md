@@ -77,7 +77,7 @@ Strangely enough, in FCL 0.6, collision detection with octomap did not work as e
 So, the hack proceeds as follows. I use both FCL 0.5 and FCL 0.6. I use a preprocessor directive "FCL_NEW" and "FCL_OLD" in the code files "FCLCollisionChecker.h" and "fcl_collision_checker_interface.cpp". From "compile_mfcl.m", I compile the MEX wrapper twice (once for each library). Thus, I end up having "fcl_collision_checker_interface_fcl_new" and  "fcl_collision_checker_interface_fcl_old".
 I use these two MEX files in unison via "FCLCollisionChecker.m" class file. Every operation is duplicated on both MEX interfaces except the following. Pointer (handles) to each interface is separate. And, collision detection queries are made only via "fcl_collision_checker_interface_fcl_old" and distance queries are made with "fcl_collision_checker_interface_fcl_new".
 
-WARNING: This has been taken care of within FCLCollisionChecker.h already. But, it is good to know. For some bizarre, reason you need to "move" the objects added to the environment at least once globally for distance computation to work in FCL 0.6. i.e. you need to issue an "update_object" command with R = eye(3) and t = zeros(3, 1). An easy way to do this is to use "interactive_object.translate([0 0 0])".
+WARNING: This has been taken care of within FCLCollisionChecker.h already. But, it is good to know. For some bizarre, reason you need to "move" the objects added to the environment at least once globally for distance computation to work in FCL 0.6. i.e. you need to issue an "update_object" command with R = eye(3) and t = zeros(3, 1). ~~An easy way to do this is to use "interactive_object.translate([0 0 0])".~~
 
 # Installing FCL 0.6
 1. Clone the FCL repository into fcl_new. Be sure to checkout master branch.
