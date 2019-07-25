@@ -1,0 +1,4 @@
+!.gitignore
+/fcl_new
+/fcl_old
+/octomap
