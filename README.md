@@ -40,10 +40,10 @@ https://www.mathworks.com/matlabcentral/fileexchange/51200-stltools?focused=3878
 ## Installation Notes
 
 1. ~~Ensure libccd is installed.~~
-2. ~~Ensure octomap is installed.
+2. ~~Ensure octomap is installed.~~
 3. ~~Make sure FCL is not installed on /usr/local/include/. It will have conflicts. If possible rename the fcl directory, to say "fcl_bkp".~~
-4. ~~Install both FCL 0.5 and 0.6. See below.
-5. ~~Go through "compile_mfcl.m" and ensure each listed package is available at the specific location on the filesystem
+4. ~~Install both FCL 0.5 and 0.6. See below.~~
+5. ~~Go through "compile_mfcl.m" and ensure each listed package is available at the specific location on the filesystem~~
 
 1. Run "prep_dependencies.sh" from the root of the repo
 
